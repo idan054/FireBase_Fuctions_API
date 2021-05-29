@@ -10,10 +10,46 @@ admin.initializeApp();
 // const cors = require("cors");
 // const admin = require("firebase-admin")
 
-const app = express();
+const collections_app = express();
+const document_app = express();
 
-// Firebase functions not have POST GET (?) , so we make it.
-app.get('/', async (req,
+// Get Specific data by choose document
+document_app.get('/', async (req,
+               res) => {
+
+  //etc. example.com/user/000000?sex=female
+  const query = req.query;// query = {sex:"female"}
+  const collectionPath = query["collectionPath"] // Collection/DocReference/InnerCollection
+  const doc = query["doc"]
+
+  const snapshot = await admin.firestore().collection(collectionPath).doc(doc).get();
+
+    let req_doc = snapshot.id;
+    // let createTime = snapshot.createTime;
+    let data = snapshot.data();
+
+  res.status(201).send(JSON.stringify({"req_doc":req_doc, data}));
+
+})
+
+// Put (update) data by choose document
+document_app.put('/', async (req,
+               res) => {
+
+  //etc. example.com/user/000000?sex=female
+  const query = req.query; // query = {sex:"female"}
+  const collectionPath = query["collectionPath"] // Collection/DocReference/InnerCollection
+  const doc = query["doc"]
+
+  const reqBody = req.body
+  await admin.firestore().collection(collectionPath).doc(doc).update(reqBody);
+
+  res.status(201).send();
+})
+
+
+// Get full data by choose collections
+collections_app.get('/', async (req,
                res) => {
   // const {collection} = req.query;
 
@@ -33,25 +69,28 @@ app.get('/', async (req,
 
   let users = [];
   snapshot.forEach(doc => {
-    let id = doc.id;
-    let createTime = doc.createTime;
+    // let id = doc.id;
+    // let createTime = doc.createTime;
     let data = doc.data();
 
-    users.push({id, ...data, createTime})
+    // users.push({id, ...data, createTime})
+    users.push({...data}) //"...data" to: "email": "ccc@ccc.com" Instead: "data": { "email": "ccc@ccc.com", }
   });
 
   res.status(201).send(JSON.stringify(users));
-
 })
 
-app.post("/", async (req, res) => {
+// Post any data by req.body & choose collections
+collections_app.post("/", async (req, res) => {
   const reqBody = req.body
   const collectionPath = reqBody["collectionPath"] // Collection/DocReference/InnerCollection
   await admin.firestore().collection(collectionPath).add(reqBody)
 
   res.status(201).send();
 })
-exports.database_GetPost = functions.https.onRequest(app);
+
+exports.GetPost_Collections = functions.https.onRequest(collections_app);
+exports.GetPut_doc = functions.https.onRequest(document_app);
 
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
