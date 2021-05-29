@@ -1,6 +1,6 @@
 const functions = require("firebase-functions");
 const express = require("express");
-const cors = require("cors");
+// const cors = require("cors");
 
 const admin = require("firebase-admin");
 admin.initializeApp();
@@ -44,7 +44,7 @@ document_app.put('/', async (req,
   const reqBody = req.body
   await admin.firestore().collection(collectionPath).doc(doc).update(reqBody);
 
-  res.status(201).send();
+  res.status(201).send({reqBody});
   //  Cannot .send(JSON.stringify(snapshot.data())) because its not a get Request
 })
 
@@ -101,16 +101,19 @@ collections_app.get('/', async (req,
 collections_app.post("/", async (req, res) => {
   const reqBody = req.body
   const collectionPath = reqBody["collectionPath"] // Collection/DocReference/InnerCollection
+  const doc_name = reqBody["doc_name"]
 
-  await admin.firestore().collection(collectionPath).add(reqBody)
 
-  res.status(201).send();
+  await admin.firestore().collection(collectionPath).doc(doc_name).set(reqBody)
+
+  res.status(201).send({reqBody});
 //  Cannot .send(JSON.stringify(snapshot.data())) because its not a get Request
 })
 
 exports.GetPost_Collections = functions.https.onRequest(collections_app);
 
 exports.GetPutDelete_doc = functions.https.onRequest(document_app);
+// Use    firebase deploy --only functions    to update on cloud
 
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
