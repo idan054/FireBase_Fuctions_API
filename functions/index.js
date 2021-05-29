@@ -44,7 +44,7 @@ document_app.put('/', async (req,
   const reqBody = req.body
   await admin.firestore().collection(collectionPath).doc(doc).update(reqBody);
 
-  res.status(201).send({reqBody});
+  res.status(201).send({"doc_ref": doc, reqBody});
   //  Cannot .send(JSON.stringify(snapshot.data())) because its not a get Request
 })
 
@@ -69,7 +69,7 @@ collections_app.get('/', async (req,
 
   //etc. example.com/user/000000?sex=female
   const query = req.query;// query = {sex:"female"}
-  // const collectionPath = query["collectionPath"] // Collection/DocReference/InnerCollection
+  const collectionPath = query["collectionPath"] // Collection/DocReference/InnerCollection
 
   // const params = req.params; //params = {id:"000000"}
   // // const collectionPath = params["collectionPath"] // Collection/DocReference/InnerCollection
@@ -79,8 +79,8 @@ collections_app.get('/', async (req,
 
   // My Get req.url: https://us-central1-bubbleflow-mitmit.cloudfunctions.net/database_GetPost?collectionPath=users
 
-   const reqBody = req.body
-  const collectionPath = reqBody["collectionPath"] // Collection/DocReference/InnerCollection
+  // const reqBody = req.body
+  // const collectionPath = reqBody["collectionPath"] // Collection/DocReference/InnerCollection
 
   const snapshot = await admin.firestore().collection(collectionPath).get();
 
@@ -101,12 +101,12 @@ collections_app.get('/', async (req,
 collections_app.post("/", async (req, res) => {
   const reqBody = req.body
   const collectionPath = reqBody["collectionPath"] // Collection/DocReference/InnerCollection
-  const doc_name = reqBody["doc_name"]
 
+  // await admin.firestore().collection(collectionPath).doc(doc_id).set(reqBody)
+  const snapshot = await admin.firestore().collection(collectionPath).add(reqBody);
+  await admin.firestore().collection(collectionPath).doc(snapshot.id).update({"doc_ref":snapshot.id}); // Add the doc id
 
-  await admin.firestore().collection(collectionPath).doc(doc_name).set(reqBody)
-
-  res.status(201).send({reqBody});
+  res.status(201).send({"doc_ref":snapshot.id, ...reqBody});
 //  Cannot .send(JSON.stringify(snapshot.data())) because its not a get Request
 })
 
