@@ -45,8 +45,22 @@ document_app.put('/', async (req,
   await admin.firestore().collection(collectionPath).doc(doc).update(reqBody);
 
   res.status(201).send();
+  //  Cannot .send(JSON.stringify(snapshot.data())) because its not a get Request
 })
 
+// Delete chosen document
+document_app.delete('/', async (req,
+               res) => {
+
+  //etc. example.com/user/000000?sex=female
+  const query = req.query;// query = {sex:"female"}
+  const collectionPath = query["collectionPath"] // Collection/DocReference/InnerCollection
+  const doc = query["doc"]
+
+  await admin.firestore().collection(collectionPath).doc(doc).delete();
+
+  res.status(201).send();
+})
 
 // Get full data by choose collections
 collections_app.get('/', async (req,
@@ -55,15 +69,18 @@ collections_app.get('/', async (req,
 
   //etc. example.com/user/000000?sex=female
   const query = req.query;// query = {sex:"female"}
-  const collectionPath = query["collectionPath"] // Collection/DocReference/InnerCollection
+  // const collectionPath = query["collectionPath"] // Collection/DocReference/InnerCollection
 
-  const params = req.params; //params = {id:"000000"}
-  // const collectionPath = params["collectionPath"] // Collection/DocReference/InnerCollection
+  // const params = req.params; //params = {id:"000000"}
+  // // const collectionPath = params["collectionPath"] // Collection/DocReference/InnerCollection
 
   // const reqBody = req.body
   // const collectionPath = reqBody["collectionPath"] // Collection/DocReference/InnerCollection
 
   // My Get req.url: https://us-central1-bubbleflow-mitmit.cloudfunctions.net/database_GetPost?collectionPath=users
+
+   const reqBody = req.body
+  const collectionPath = reqBody["collectionPath"] // Collection/DocReference/InnerCollection
 
   const snapshot = await admin.firestore().collection(collectionPath).get();
 
@@ -84,13 +101,16 @@ collections_app.get('/', async (req,
 collections_app.post("/", async (req, res) => {
   const reqBody = req.body
   const collectionPath = reqBody["collectionPath"] // Collection/DocReference/InnerCollection
+
   await admin.firestore().collection(collectionPath).add(reqBody)
 
   res.status(201).send();
+//  Cannot .send(JSON.stringify(snapshot.data())) because its not a get Request
 })
 
 exports.GetPost_Collections = functions.https.onRequest(collections_app);
-exports.GetPut_doc = functions.https.onRequest(document_app);
+
+exports.GetPutDelete_doc = functions.https.onRequest(document_app);
 
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
