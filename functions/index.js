@@ -1,10 +1,10 @@
+
 // How I Made it: https://www.youtube.com/watch?v=iIVlRZIo2-c&t=591s
 
 const functions = require("firebase-functions");
 const express = require("express");
 // const cors = require("cors");
 const moment = require("moment")
-
 const admin = require("firebase-admin");
 admin.initializeApp();
 
@@ -33,7 +33,8 @@ document_app.get('/', async (req,
   const query = req.query;// query = {sex:"female"}
   const collectionPath = query["collectionPath"] // Collection/DocReference/InnerCollection
   const doc = query["doc"]
-  const last_edit = exports.currentTime()
+  const currentTimeStr = currentTime()["currentTimeStr"]
+  const currentTimeNum = currentTime()["currentTimeNum"]
 
 
   const snapshot = await admin.firestore().collection(collectionPath).doc(doc).get();
@@ -42,9 +43,10 @@ document_app.get('/', async (req,
     // let createTime = snapshot.createTime;
     let data = snapshot.data();
 
-  res.status(201).send(JSON.stringify({
+  res.status(200).send(JSON.stringify({
     "req_doc":req_doc,
-    "last_edit": last_edit,
+    "last_edit_str": currentTimeStr,
+    "last_edit_num": currentTimeNum,
     data}
     ));
 
@@ -69,7 +71,7 @@ document_app.put('/', async (req,
         ...reqBody},  // "..." to ignore reqBody{}
     );
 
-  res.status(201).send({
+  res.status(200).send({
       "doc_ref": doc,
       "last_edit_str": currentTimeStr,
       "last_edit_num": currentTimeNum,
@@ -88,7 +90,7 @@ document_app.delete('/', async (req,
 
   await admin.firestore().collection(collectionPath).doc(doc).delete();
 
-  res.status(201).send();
+  res.status(200).send();
 })
 
 // Get full data by choose collections
@@ -123,7 +125,7 @@ collections_app.get('/', async (req,
     users.push({...data}) //"...data" to: "email": "ccc@ccc.com" Instead: "data": { "email": "ccc@ccc.com", }
   });
 
-  res.status(201).send(JSON.stringify(users));
+  res.status(200).send(JSON.stringify(users));
 })
 
 // Post any data by req.body & choose collections
@@ -154,7 +156,7 @@ collections_app.post("/", async (req, res) => {
     // 500-599: (Server error)
 
 
-  res.status(201).send({
+  res.status(200).send({
         "doc_ref":snapshot.id,
         "created_time_str":currentTimeStr,
         "created_time_num":currentTimeNum,
@@ -166,9 +168,8 @@ collections_app.post("/", async (req, res) => {
 })
 
 exports.GetPost_Collections = functions.https.onRequest(collections_app);
-
 exports.GetPutDelete_doc = functions.https.onRequest(document_app);
-// Use    firebase deploy --only functions    to update on cloud
+
 
 // Create and Deploy Your First Cloud Functions
 // https://firebase.google.com/docs/functions/write-firebase-functions
