@@ -169,10 +169,11 @@ exports.GetPost_Collections = functions.https.onRequest(collections_app);
 exports.GetPutDelete_doc = functions.https.onRequest(document_app);
 // Use    firebase deploy --only functions    to update on cloud
 
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
+// Create and Deploy Your First Cloud Functions
+// https://firebase.google.com/docs/functions/write-firebase-functions
+
 // exports.helloWorld = functions.https.onRequest((request, response) => {
 //   functions.logger.info("Hello logs!", {structuredData: true});
 //   response.send("Hello from Firebase!");
 // });
+
